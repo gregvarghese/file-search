@@ -9,4 +9,5 @@ TODO
 
 - File Lengths 
 - Optimize/change way data is stored 
+- Update storage on changes 
 - Clean up code 
