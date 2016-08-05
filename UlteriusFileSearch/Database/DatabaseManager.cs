@@ -40,7 +40,6 @@ namespace UlteriusFileSearch.Database
             {
                 //read the metadata
                 var lastUpdate = reader.ReadInt64();
-                Console.WriteLine(lastUpdate);
                 //read until exception
                 while (true)
                 {
@@ -91,9 +90,7 @@ namespace UlteriusFileSearch.Database
                 {
                     var lastUpdate = UnixTimeStampToDateTime(reader.ReadInt64());
 
-                    Console.WriteLine(lastUpdate);
                     var hours = (DateTime.Now - lastUpdate).TotalHours;
-                    Console.WriteLine(hours);
                     //update the DB once every 24 hours
                     if (hours > 24)
                     {
@@ -122,35 +119,43 @@ namespace UlteriusFileSearch.Database
                 var drives = Directory.GetLogicalDrives();
                 foreach (var drive in drives)
                 {
-                    CurrentDrive = drive;
-                    Scanning = true;
-                    var driveName = drive.Replace("\\", "").Replace("/", "");
-                    Console.WriteLine("scanning " + driveName);
-                    var data = new MftEnumerator(driveName);
-                    foreach (var currentFile in data)
+                    try
                     {
-                        if (currentFile != null)
+                        CurrentDrive = drive;
+                        Scanning = true;
+                        var driveName = drive.Replace("\\", "").Replace("/", "");
+                        Console.WriteLine("scanning " + driveName);
+                        var data = new MftEnumerator(driveName);
+                        foreach (var currentFile in data)
                         {
-                            try
+                            if (currentFile != null)
                             {
-                                var fileName = Encoding.UTF8.GetBytes(Path.GetFileName(currentFile));
-                                var directory = Encoding.UTF8.GetBytes(Path.GetDirectoryName(currentFile) ?? "null");
-                                //slows down the scan
+                                try
+                                {
+                                    var fileName = Encoding.UTF8.GetBytes(Path.GetFileName(currentFile));
+                                    var directory = Encoding.UTF8.GetBytes(Path.GetDirectoryName(currentFile) ?? "null");
+                                    //slows down the scan
 
-                                //  long size = WinApi.GetFileSizeA(currentFile);
-                                long size = -1;
+                                    //  long size = WinApi.GetFileSizeA(currentFile);
+                                    long size = -1;
 
-                                writer.Write(fileName.Length);
-                                writer.Write(fileName);
-                                writer.Write(directory.Length);
-                                writer.Write(directory);
-                                writer.Write(size);
-                            }
-                            catch (Exception)
-                            {
-                                //path too long
+                                    writer.Write(fileName.Length);
+                                    writer.Write(fileName);
+                                    writer.Write(directory.Length);
+                                    writer.Write(directory);
+                                    writer.Write(size);
+                                }
+                                catch (Exception)
+                                {
+                                    //path too long
+                                }
                             }
                         }
+                    }
+                    catch (Exception)
+                    {
+
+                        Scanning = false;
                     }
                 }
                 Scanning = false;
